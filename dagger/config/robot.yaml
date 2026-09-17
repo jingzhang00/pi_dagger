@@ -1,0 +1,32 @@
+runtime:
+  # Robot/runtime settings.
+  control_hz: 10
+  transition_stride_steps: 2
+  max_arm_delta_deg: 12
+  learner_device: auto
+  feature_host: 127.0.0.1
+  feature_port: 5556
+  critical_timeout_s: 30
+  full_timeout_s: 30
+  human_sync_arm_threshold_deg: 10
+  human_sync_hand_threshold: 0.2
+  human_sync_frames: 3
+  human_deadband_arm_deg: 1
+  human_deadband_hand: 0.02
+  arm_joint_limits_deg:
+    joint_1: [-45, 80]
+    joint_2: [-90, 26]
+    joint_3: [10, 90]
+    joint_4: [0, 50]
+    joint_5: [-100, 85]
+    joint_6: [-30, 45]
+
+hardware:
+  arm_baud: 1000000
+  hand_type: right
+  hand_can: can0
+  hand_baud: 1000000
+  arm_dev: /dev/serial/by-id/usb-1a86_USB_Single_Serial_5B8E115148-if00
+  camera_device: /dev/v4l/by-id/usb-SunplusIT_Inc_SPCA2100_PC_Camera-video-index0
+  exo_port: /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
+  glove_port: /dev/ttyACM1

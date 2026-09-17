@@ -1,0 +1,40 @@
+task: d1
+wandb_enabled: true
+project_name: openpi
+log_interval: 10
+
+vla:
+  config_name: pi05_d1
+  output: checkpoints/vla
+  base_checkpoint: models/openpi-assets/checkpoints/pi05_base/params
+  dataset: dataset/pick_up_the_doll_and_place_it_on_the_plate
+  prompt: Pick up the doll and place it on the plate
+  # Flow-matching inference steps, default=10 in pi settings
+  inference_steps: 10
+  # VLA proposal horizon H. Online RL executes shorter C-step chunks.
+  action_horizon: 20
+  model:
+    pi05: true
+    discrete_state_input: true
+  # The paper uses base + two wrist cameras. D1 currently supplies only base_0_rgb.
+  rl_token_cameras: [base_0_rgb]
+  finetune:
+    enabled: true
+    steps: 5000
+    batch_size: 128
+    save_interval: 1000
+    keep_period: 15000
+    num_workers: 8
+    fsdp_devices: 4
+    exp_name: d1
+    overwrite: true
+    resume: false
+
+
+
+tasks:
+  default:
+    actor_hidden_dim: 256
+    actor_num_layers: 2
+    critic_hidden_dim: 256
+    critic_num_layers: 2

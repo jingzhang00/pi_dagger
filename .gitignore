@@ -1,0 +1,10 @@
+dataset/
+__pycache__/
+checkpoints/
+.venv/
+models/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+wandb/
+tests/
