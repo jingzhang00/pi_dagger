@@ -1,13 +1,10 @@
 runtime:
-  # Robot/runtime settings.
   control_hz: 10
-  transition_stride_steps: 2
+  chunk_steps: 20
+  episode_seconds: 30
+  initial_state_file: dagger/config/pick_up_the_doll_initial_state.json
+  head_target_rad: [-0.2617994, -1.0471975]
   max_arm_delta_deg: 12
-  learner_device: auto
-  feature_host: 127.0.0.1
-  feature_port: 5556
-  critical_timeout_s: 30
-  full_timeout_s: 30
   human_sync_arm_threshold_deg: 10
   human_sync_hand_threshold: 0.2
   human_sync_frames: 3

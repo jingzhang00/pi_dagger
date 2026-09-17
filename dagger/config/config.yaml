@@ -1,23 +1,21 @@
 task: d1
-wandb_enabled: true
 project_name: openpi
-log_interval: 10
+wandb_enabled: true
 
 vla:
+  # A trained clean π0.5 checkpoint directory containing params/ and assets/.
+  checkpoint: openpi/checkpoints
   config_name: pi05_d1
+  # Used only by scripts/finetune.sh to create the first clean policy.
   output: checkpoints/vla
   base_checkpoint: models/openpi-assets/checkpoints/pi05_base/params
   dataset: dataset/pick_up_the_doll_and_place_it_on_the_plate
   prompt: Pick up the doll and place it on the plate
-  # Flow-matching inference steps, default=10 in pi settings
   inference_steps: 10
-  # VLA proposal horizon H. Online RL executes shorter C-step chunks.
   action_horizon: 20
   model:
     pi05: true
     discrete_state_input: true
-  # The paper uses base + two wrist cameras. D1 currently supplies only base_0_rgb.
-  rl_token_cameras: [base_0_rgb]
   finetune:
     enabled: true
     steps: 5000
@@ -26,15 +24,14 @@ vla:
     keep_period: 15000
     num_workers: 8
     fsdp_devices: 4
-    exp_name: d1
+    exp_name: dagger
     overwrite: true
     resume: false
 
-
-
-tasks:
-  default:
-    actor_hidden_dim: 256
-    actor_num_layers: 2
-    critic_hidden_dim: 256
-    critic_num_layers: 2
+dagger:
+  rounds: 1
+  episodes_per_round: 20
+  intervention_ratio: 0.3
+  intervention_dataset: checkpoints/dagger/interventions
+  policy_output: checkpoints/dagger/policies
+  state_file: checkpoints/dagger/state.json

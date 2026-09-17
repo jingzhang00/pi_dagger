@@ -15,10 +15,11 @@ from dagger.settings import load_config
 
 OPENPI_WORKSPACE = pathlib.Path(__file__).resolve().parents[2]
 DAGGER_SETTINGS = load_config()
-D1_REPO_ID = os.environ.get("D1_REPO_ID", str(DAGGER_SETTINGS.vla["dataset"]))
-PI05_BASE_CKPT = os.environ.get(
-    "PI05_BASE_CKPT", str(DAGGER_SETTINGS.vla["base_checkpoint"])
-)
+D1_REPO_ID = os.environ.get("D1_REPO_ID", str(DAGGER_SETTINGS.clean_dataset))
+_configured_base = DAGGER_SETTINGS.base_checkpoint
+if _configured_base.name != "params" or not _configured_base.is_dir():
+    _configured_base = DAGGER_SETTINGS.clean_checkpoint / "params"
+PI05_BASE_CKPT = os.environ.get("PI05_BASE_CKPT", str(_configured_base))
 D1_FINETUNE_CLIP_GRADIENT_NORM = 1.0
 
 @dataclasses.dataclass(frozen=True)
@@ -126,7 +127,7 @@ def get_d1_configs():
             log_interval=DAGGER_SETTINGS.log_interval,
             save_interval=finetune["save_interval"],
             keep_period=finetune["keep_period"],
-            checkpoint_base_dir=DAGGER_SETTINGS.vla["output"],
+            checkpoint_base_dir=str(DAGGER_SETTINGS.clean_output),
             overwrite=finetune["overwrite"],
             resume=finetune["resume"],
             wandb_enabled=DAGGER_SETTINGS.wandb_enabled,

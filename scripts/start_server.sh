@@ -7,7 +7,7 @@ OPENPI_ROOT="${OPENPI_ROOT:-${OPENPI_WORKSPACE}/openpi}"
 CONFIG="${CONFIG:-${OPENPI_WORKSPACE}/dagger/config/config.yaml}"
 export CONFIG
 POLICY_CONFIG="${POLICY_CONFIG:-$(${OPENPI_PYTHON} -c 'from dagger.settings import load_config; print(load_config().vla["config_name"])')}"
-CHECKPOINT_DIR="${CHECKPOINT_DIR:-$(${OPENPI_PYTHON} -c 'from dagger.settings import load_config; print(load_config().vla_checkpoint)')}"
+CHECKPOINT_DIR="${CHECKPOINT_DIR:-$(${OPENPI_PYTHON} -c 'from dagger.settings import load_config; print(load_config().clean_checkpoint)')}"
 DEFAULT_PROMPT="$(${OPENPI_PYTHON} -c 'from dagger.settings import load_config; print(load_config().vla["prompt"])')"
 
 

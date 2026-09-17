@@ -5,8 +5,13 @@ WORKSPACE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON="${OPENPI_PYTHON:-${WORKSPACE}/.venv/bin/python}"
 CONFIG="${CONFIG:-${WORKSPACE}/dagger/config/config.yaml}"
 
+if [[ ! -x "${PYTHON}" ]]; then
+    echo "OPENPI_PYTHON is not executable: ${PYTHON}" >&2
+    exit 1
+fi
+
 cd "${WORKSPACE}"
-export CONFIG="${CONFIG}"
+export CONFIG
 export PYTHONPATH="${WORKSPACE}:${WORKSPACE}/openpi/src:${WORKSPACE}/openpi/packages/openpi-client/src:${PYTHONPATH:-}"
 
 WANDB_ENV_FILE="${WANDB_ENV_FILE:-${WORKSPACE}/wandb.env}"
@@ -16,54 +21,4 @@ if [[ -f "${WANDB_ENV_FILE}" ]]; then
     set +a
 fi
 
-TOKEN_CHECKPOINT="${DAGGER_TOKEN_CHECKPOINT:-$("${PYTHON}" -c 'from pathlib import Path; from dagger.settings import load_config; c=load_config(); print(Path(c.rl_token["output"]) / ("step_" + str(c.rl_token["steps"]) + ".pt"))')}"
-FEATURE_HOST="$("${PYTHON}" -c 'from dagger.settings import load_config; print(load_config().runtime["feature_host"])')"
-FEATURE_PORT="$("${PYTHON}" -c 'from dagger.settings import load_config; print(load_config().runtime["feature_port"])')"
-FEATURE_LOG="${DAGGER_FEATURE_LOG:-/tmp/dagger_feature_server.log}"
-
-cleanup() {
-    if [[ -n "${FEATURE_PID:-}" ]] && kill -0 "${FEATURE_PID}" 2>/dev/null; then
-        kill "${FEATURE_PID}" 2>/dev/null || true
-        wait "${FEATURE_PID}" 2>/dev/null || true
-    fi
-}
-trap cleanup EXIT INT TERM
-
-if fuser -n tcp "${FEATURE_PORT}" >/dev/null 2>&1; then
-    echo "Stopping process using TCP port ${FEATURE_PORT}"
-    fuser -k -TERM -n tcp "${FEATURE_PORT}" >/dev/null 2>&1 || true
-    for _ in $(seq 1 50); do
-        if ! fuser -n tcp "${FEATURE_PORT}" >/dev/null 2>&1; then
-            break
-        fi
-        sleep 0.1
-    done
-    if fuser -n tcp "${FEATURE_PORT}" >/dev/null 2>&1; then
-        echo "TCP port ${FEATURE_PORT} is still in use" >&2
-        exit 1
-    fi
-fi
-
-"${PYTHON}" -m DAGGER.serve_features \
-    --config "${CONFIG}" \
-    --token "${TOKEN_CHECKPOINT}" \
-    --host "${FEATURE_HOST}" \
-    --port "${FEATURE_PORT}" \
-    >"${FEATURE_LOG}" 2>&1 &
-FEATURE_PID=$!
-for _ in $(seq 1 100); do
-    if ! kill -0 "${FEATURE_PID}" 2>/dev/null; then
-        sed -n '1,80p' "${FEATURE_LOG}" >&2
-        exit 1
-    fi
-    if (echo >/dev/tcp/${FEATURE_HOST}/${FEATURE_PORT}) 2>/dev/null; then
-        break
-    fi
-    sleep 0.1
-done
-
-exec "${PYTHON}" -m robots.d1.online_rl_d1 \
-    --config "${CONFIG}" \
-    --host "${FEATURE_HOST}" \
-    --port "${FEATURE_PORT}" \
-    "$@"
+exec "${PYTHON}" -m dagger.online_runner --config "${CONFIG}" "$@"

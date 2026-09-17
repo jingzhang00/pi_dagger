@@ -42,11 +42,10 @@ def main() -> int:
     from openpi.policies import policy_config as _policy_config
     from openpi.serving.websocket_policy_server import WebsocketPolicyServer
     from robots.d1 import d1_policy
-    from robots.d1.train import load_config
+    from robots.d1.train import get_config
 
     logging.info("Loading OpenPI config=%s checkpoint=%s", args.policy_config, policy_dir)
-    _config = load_config()
-    train_config = _config.get_config(args.policy_config)
+    train_config = get_config(args.policy_config)
     policy = _policy_config.create_trained_policy(
         train_config,
         policy_dir,
